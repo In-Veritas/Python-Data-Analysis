@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 
 #Loading data
 
@@ -75,3 +75,36 @@ dataFrameCSV = dataFrameCSV[cols[0:4] + [cols[-1]] + cols[4:12]] #Moves a column
 # print(newDataFrame)
 
 
+ #Getting Water pokemons on a single DataFrame
+waterType1 = dataFrameCSV[dataFrameCSV['Type 1'] == 'Water']
+waterType2 = dataFrameCSV[dataFrameCSV['Type 2'] == 'Water']
+waterTypes = pd.concat((waterType1, waterType2))
+
+
+#Seeing if speedy pokemons are getting more speedy by generation
+allPokesSpeed = dataFrameCSV[dataFrameCSV['Speed'] >= 0]
+#print(allPokesSpeed.groupby(['Generation']).mean()[['Speed']]) #This will give the speed average, but there are also very slow pokemons being released with each generation, and I want to know if the speed on fast pokemon is being increased. And fast pokemon will be any pokemon with speed above average
+#print(allPokesSpeed.groupby(['Generation']).mean()['Speed'].sum()/allPokesSpeed['Generation'].max()) #This will create the total speed average between generations
+#speedyPokes = dataFrameCSV[dataFrameCSV['Speed'] >= 67.86288555805882]
+#print(speedyPokes.groupby(['Generation']).mean()[['Speed']])
+
+#Pivoting a DataFrame 
+groupedPokemon = dataFrameCSV.groupby(['Generation', 'Type 1']).mean()['Attack']
+#print(groupedPokemon.unstack())
+
+groupedPokemon = dataFrameCSV.groupby(['Generation', 'Type 1']).mean()['Attack'].reset_index()
+#print(groupedPokemon.pivot(index='Generation', columns='Type 1', values='Attack'))
+
+groupedPokemon = dataFrameCSV.pivot_table(index='Generation', columns='Type 1', values='Attack', aggfunc=np.mean)
+#print(groupedPokemon)
+
+#Crosstab
+#How many pokemon type combinations are there?
+#print(pd.crosstab(dataFrameCSV['Type 1'], dataFrameCSV['Type 2']))
+
+#Cleaning Data
+
+# Since some generations don't have pokemons of all types, some values are null.
+pokeAtkAvg = groupedPokemon[pd.notnull(groupedPokemon)]
+pokeAtkAvg = pokeAtkAvg.fillna('No pokes') #fillna will replace null values with 'No pokes'.
+print(pokeAtkAvg.sum())
